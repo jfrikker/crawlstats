@@ -37,14 +37,8 @@ rollScaled m s | m <= 0 = return 0
                  in fromFrequencies freqs
 
 divRandRound :: (Monad m, C Probability m) => Integer -> Integer -> m Integer
-divRandRound num den
-  | remainder == 0 = return $ num `div` den
-  | otherwise = do
-    r <- roll den
-    if r < remainder
-      then return $ (num `div` den) + 1
-      else return $ num `div` den
-  where remainder = rem num den
+divRandRound num den = fromFrequencies [(num `div` den, zeroProb), (num `div` den + 1, (1 % 1) - zeroProb)]
+  where zeroProb = rem num den % den
 
 space :: Boxes.Box
 space = Boxes.char ' '
