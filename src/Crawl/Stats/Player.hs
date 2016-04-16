@@ -9,6 +9,7 @@ module Crawl.Stats.Player (
 
 import Crawl.Stats.Dice
 import Crawl.Stats.Weapon (Weapon)
+import qualified Crawl.Stats.Stats as Stats
 import qualified Crawl.Stats.Weapon as Weapon
 import Crawl.Stats.Armour (Armour)
 import qualified Crawl.Stats.Armour as Armour
@@ -21,12 +22,15 @@ data Player = Player {
   weapon :: Weapon,
   armour :: Armour,
   fighting :: Integer,
-  maces :: Integer,
-  armourSk :: Integer
+  macesSkill :: Integer,
+  armourSkill :: Integer
 }
 
+skill :: Stats.Skill -> Player -> Integer
+skill Stats.MACES_FLAILS = macesSkill
+
 adjustedBodyArmourPenalty :: Integer -> Player -> Integer
-adjustedBodyArmourPenalty scale player = 2 * encumbrance * encumbrance * (450 - armourSk player)
+adjustedBodyArmourPenalty scale player = 2 * encumbrance * encumbrance * (450 - armourSkill player)
                                           * scale `div` (5 * (str player + 3)) `div` 450
   where encumbrance = (Armour.encumbrance.armour) player
 
@@ -39,7 +43,7 @@ calcStatToHitBase player = dex player + (str player - dex player) * (Weapon.strW
 toHit :: (Monad m, C Probability m) => Player -> m Integer
 toHit player = do
   fromFighting <- roll $ fighting player
-  fromWeaponSkill <- roll $ maces player
+  fromWeaponSkill <- roll $ skill (Weapon.skill $ weapon player) player
   bap <- armourToHitPenalty player
   randbap <- divRandRound bap 20
   let max = 15 +

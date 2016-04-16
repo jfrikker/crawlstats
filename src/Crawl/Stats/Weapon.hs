@@ -6,13 +6,15 @@ import qualified Data.Csv as CSV
 import GHC.Generics (Generic)
 
 import qualified Crawl.Stats.Named as Named
+import Crawl.Stats.Stats (Skill)
 
 data Weapon = Weapon {
   name :: String,
   dam :: Integer,
   hit :: Integer,
   speed :: Integer,
-  strWeight :: Integer
+  strWeight :: Integer,
+  skill :: Skill
 } deriving Generic
 
 instance CSV.FromNamedRecord Weapon

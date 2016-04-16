@@ -18,20 +18,20 @@ player cd = Player {
   weapon = fromJust $ CrawlData.findWeapon "whip" cd,
   armour = fromJust $ CrawlData.findArmour "plate" cd,
   fighting = 3,
-  maces = 3,
-  armourSk = 3
+  macesSkill = 3,
+  armourSkill = 3
 }
 
 main :: IO ()
 main = do
   cd <- CrawlData.loadData "data"
   let p = player cd
-  let toHit = Player.toHit p
-  let toHitList = decons $ norm toHit
+  let toHit = norm $ Player.toHit p
+  let toHitList = decons toHit
   Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt toHitList
   let toHitRatio = fmap (% 1) toHit
   print $ fromRational $ expected toHitRatio
   print $ sqrt $ fromRational $ variance toHitRatio
 
-  let damage = Player.meleeDamage p
+  let damage = norm $ Player.meleeDamage p
   Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons $ norm damage

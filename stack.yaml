@@ -3,5 +3,7 @@ extra-package-dbs: []
 packages:
 - '.'
 extra-deps:
+- monadplus-1.4.2
 - probability-0.2.5
+- text-1.2.2.0
 resolver: lts-5.1

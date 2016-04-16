@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Crawl.Stats.Dice, Crawl.Stats.Player, Crawl.Stats.Weapon, Crawl.Stats.Data, Crawl.Stats.Named, Crawl.Stats.Armour
+  exposed-modules:     Crawl.Stats.Dice, Crawl.Stats.Player, Crawl.Stats.Weapon, Crawl.Stats.Data, Crawl.Stats.Named, Crawl.Stats.Armour, Crawl.Stats.Stats
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , probability
@@ -24,6 +24,8 @@ library
                      , bytestring
                      , vector
                      , mtl
+                     , monadplus
+                     , bytestring
   default-language:    Haskell2010
 
 executable crawlstats

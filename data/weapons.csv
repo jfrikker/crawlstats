@@ -1,3 +1,3 @@
-name,dam,hit,speed,strWeight
-whip,6,2,11,2
-mace,8,3,14,8
+name,dam,hit,speed,strWeight,skill
+whip,6,2,11,2,MACES_FLAILS
+mace,8,3,14,8,MACES_FLAILS
