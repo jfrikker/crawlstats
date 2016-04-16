@@ -3,7 +3,8 @@ module Crawl.Stats.Data (
   CrawlData(..),
   loadData,
   findWeapon,
-  findArmour
+  findArmour,
+  findMonster
 ) where
 
 import qualified Data.Csv as CSV
@@ -17,12 +18,15 @@ import Crawl.Stats.Weapon (Weapon)
 import qualified Crawl.Stats.Weapon as Weapon
 import Crawl.Stats.Armour (Armour)
 import qualified Crawl.Stats.Armour as Armour
+import Crawl.Stats.Monster (Monster)
+import qualified Crawl.Stats.Monster as Monster
 import Crawl.Stats.Named (Named)
 import qualified Crawl.Stats.Named as Named
 
 data CrawlData = CrawlData {
   weapons :: [Weapon],
-  armour :: [Armour]
+  armour :: [Armour],
+  monsters :: [Monster]
 }
 
 loadDataFile :: CSV.FromNamedRecord a => FilePath -> String -> IO [a]
@@ -38,7 +42,8 @@ loadData :: FilePath -> IO CrawlData
 loadData dir = do
   weapons <- loadDataFile dir "weapons.csv"
   armour <- loadDataFile dir "armour.csv"
-  return CrawlData { weapons = weapons, armour = armour }
+  monsters <- loadDataFile dir "monsters.csv"
+  return CrawlData { weapons = weapons, armour = armour, monsters = monsters }
 
 findWithName :: Named.Named a => String -> [a] -> Maybe a
 findWithName = Named.find . map toLower
@@ -48,3 +53,6 @@ findWeapon name = findWithName name . weapons
 
 findArmour :: String -> CrawlData -> Maybe Armour
 findArmour name = findWithName name . armour
+
+findMonster :: String -> CrawlData -> Maybe Monster
+findMonster name = findWithName name . monsters

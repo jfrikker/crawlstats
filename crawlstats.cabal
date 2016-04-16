@@ -15,7 +15,15 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Crawl.Stats.Dice, Crawl.Stats.Player, Crawl.Stats.Weapon, Crawl.Stats.Data, Crawl.Stats.Named, Crawl.Stats.Armour, Crawl.Stats.Stats
+  exposed-modules:   Crawl.Stats.Armour
+                     , Crawl.Stats.Attack
+                     , Crawl.Stats.Data
+                     , Crawl.Stats.Dice
+                     , Crawl.Stats.Monster
+                     , Crawl.Stats.Named
+                     , Crawl.Stats.Player
+                     , Crawl.Stats.Stats
+                     , Crawl.Stats.Weapon
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , probability

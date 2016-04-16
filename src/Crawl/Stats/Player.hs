@@ -35,7 +35,7 @@ adjustedBodyArmourPenalty scale player = 2 * encumbrance * encumbrance * (450 - 
                                           * scale `div` (5 * (str player + 3)) `div` 450
   where encumbrance = (Armour.encumbrance.armour) player
 
-armourToHitPenalty :: (Monad m, C Probability m) => Player -> m Integer
+armourToHitPenalty :: Dice m => Player -> m Integer
 armourToHitPenalty player = roll $ adjustedBodyArmourPenalty 20 player
 
 calcStatToHitBase :: Player -> Integer
@@ -44,23 +44,25 @@ calcStatToHitBase player = dex player + (str player - dex player) * (Weapon.strW
 weaponSkill :: Player -> Integer
 weaponSkill player = skill (Weapon.skill $ weapon player) player
 
-toHit :: (Monad m, C Probability m) => Player -> m Integer
-toHit player = do
+toHit :: (Dice m, Normable (m Integer)) => Player -> m Integer
+toHit player = norm $ do
   fromFighting <- roll $ fighting player
   fromWeaponSkill <- roll $ weaponSkill player
   bap <- armourToHitPenalty player
   randbap <- divRandRound bap 20
+  let fromWeapon = Weapon.hit $ weapon player
   let max = 15 +
             calcStatToHitBase player +
             fromFighting +
-            fromWeaponSkill -
+            fromWeaponSkill +
+            fromWeapon -
             randbap
   roll max
 
 calcStatToDamBase :: Player -> Integer
 calcStatToDamBase player = str player + (dex player - str player) * (10 - (Weapon.strWeight.weapon) player) `div` 20
 
-playerStatModifyDamage :: (Monad m, C Probability m) => Player -> Integer -> m Integer
+playerStatModifyDamage :: Dice m => Player -> Integer -> m Integer
 playerStatModifyDamage player damage
   | damStatVal > 11 = do
     extra <- roll $ damStatVal - 11
@@ -71,7 +73,7 @@ playerStatModifyDamage player damage
   | otherwise = return damStatVal
   where damStatVal = calcStatToDamBase player
 
-playerApplyFightingSkill :: (Monad m, C Probability m) => Player -> Integer -> m Integer
+playerApplyFightingSkill :: Dice m => Player -> Integer -> m Integer
 playerApplyFightingSkill player damage = do
   r <- roll $ (fighting player * 100) + 1
   return $ damage * (2500 + r) `div` 2500
@@ -87,8 +89,8 @@ getsM f = do
   s <- get
   lift $ f s
 
-meleeDamage :: (Monad m, C Probability m) => Player -> m Integer
-meleeDamage player = evalStateT (do
+meleeDamage :: (Dice m, Normable (m Integer)) => Player -> m Integer
+meleeDamage player = norm $ evalStateT (do
   put $ (Weapon.dam.weapon) player
   modifyM $ playerStatModifyDamage player
   modifyM $ playerApplyFightingSkill player

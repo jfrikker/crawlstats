@@ -5,6 +5,7 @@ import Crawl.Stats.Player (Player(..))
 import qualified Crawl.Stats.Player as Player 
 import Crawl.Stats.Data (CrawlData)
 import qualified Crawl.Stats.Data as CrawlData
+import qualified Crawl.Stats.Attack as Attack
 
 import Numeric.Probability.Distribution
 import qualified Text.PrettyPrint.Boxes as Boxes
@@ -15,7 +16,7 @@ player cd = Player {
   str = 20,
   int = 1,
   dex = 9,
-  weapon = fromJust $ CrawlData.findWeapon "whip" cd,
+  weapon = fromJust $ CrawlData.findWeapon "club" cd,
   armour = fromJust $ CrawlData.findArmour "plate" cd,
   fighting = 3,
   macesSkill = 3,
@@ -26,10 +27,14 @@ main :: IO ()
 main = do
   cd <- CrawlData.loadData "data"
   let p = player cd
-  let toHit = norm $ Player.toHit p
+  let toHit = Player.toHit p
   let toHitList = decons toHit
   Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt toHitList
   print $ Player.weaponSpeed p
 
-  let damage = norm $ Player.meleeDamage p
-  Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons $ norm damage
+  let damage = Player.meleeDamage p
+  Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons damage
+
+  let monster = fromJust $ CrawlData.findMonster "bat" cd
+  let playerDamage = Attack.playerDamage monster p
+  Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons playerDamage
