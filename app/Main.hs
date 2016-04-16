@@ -29,9 +29,7 @@ main = do
   let toHit = norm $ Player.toHit p
   let toHitList = decons toHit
   Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt toHitList
-  let toHitRatio = fmap (% 1) toHit
-  print $ fromRational $ expected toHitRatio
-  print $ sqrt $ fromRational $ variance toHitRatio
+  print $ Player.weaponSpeed p
 
   let damage = norm $ Player.meleeDamage p
   Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons $ norm damage

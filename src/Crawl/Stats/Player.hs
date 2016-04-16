@@ -4,7 +4,8 @@ module Crawl.Stats.Player (
   Player(..),
   toHit,
   meleeDamage,
-  adjustedBodyArmourPenalty
+  adjustedBodyArmourPenalty,
+  weaponSpeed
 ) where
 
 import Crawl.Stats.Dice
@@ -40,10 +41,13 @@ armourToHitPenalty player = roll $ adjustedBodyArmourPenalty 20 player
 calcStatToHitBase :: Player -> Integer
 calcStatToHitBase player = dex player + (str player - dex player) * (Weapon.strWeight.weapon) player `div` 20
 
+weaponSkill :: Player -> Integer
+weaponSkill player = skill (Weapon.skill $ weapon player) player
+
 toHit :: (Monad m, C Probability m) => Player -> m Integer
 toHit player = do
   fromFighting <- roll $ fighting player
-  fromWeaponSkill <- roll $ skill (Weapon.skill $ weapon player) player
+  fromWeaponSkill <- roll $ weaponSkill player
   bap <- armourToHitPenalty player
   randbap <- divRandRound bap 20
   let max = 15 +
@@ -89,3 +93,9 @@ meleeDamage player = evalStateT (do
   modifyM $ playerStatModifyDamage player
   modifyM $ playerApplyFightingSkill player
   getsM roll) 0
+
+weaponSpeed :: Player -> Integer
+weaponSpeed player = max minDelay $ baseSpeed - skillAdj
+  where baseSpeed = Weapon.speed $ weapon player
+        minDelay = min 7 $ baseSpeed `div` 2
+        skillAdj = weaponSkill player `div` 2
