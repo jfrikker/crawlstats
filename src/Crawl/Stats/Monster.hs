@@ -10,7 +10,8 @@ import Crawl.Stats.Stats (Skill)
 
 data Monster = Monster {
   name :: String,
-  ev :: Integer
+  ev :: Integer,
+  ac :: Integer
 } deriving Generic
 
 instance CSV.FromNamedRecord Monster

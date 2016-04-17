@@ -75,8 +75,15 @@ playerStatModifyDamage player damage
 
 playerApplyFightingSkill :: Dice m => Player -> Integer -> m Integer
 playerApplyFightingSkill player damage = do
-  r <- roll $ (fighting player * 100) + 1
-  return $ damage * (2500 + r) `div` 2500
+  let num = (fighting player * 100) + 1
+  r <- rollScaled (num * damage) 4000
+  return $ r + damage
+
+playerApplyWeaponSkill :: Dice m => Player -> Integer -> m Integer
+playerApplyWeaponSkill player damage = do
+  let num = (weaponSkill player * 100) + 1
+  r <- rollScaled (num * damage) 2500
+  return $ r + damage
 
 modifyM :: Monad m => (s -> m s) -> StateT s m ()
 modifyM m = do
@@ -93,8 +100,10 @@ meleeDamage :: (Dice m, Normable (m Integer)) => Player -> m Integer
 meleeDamage player = norm $ evalStateT (do
   put $ (Weapon.dam.weapon) player
   modifyM $ playerStatModifyDamage player
+  modifyM $ roll . (+ 1)
+  modifyM $ playerApplyWeaponSkill player
   modifyM $ playerApplyFightingSkill player
-  getsM roll) 0
+  get) 0
 
 weaponSpeed :: Player -> Integer
 weaponSpeed player = max minDelay $ baseSpeed - skillAdj

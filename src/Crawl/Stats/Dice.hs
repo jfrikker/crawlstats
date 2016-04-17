@@ -3,9 +3,11 @@
 
 module Crawl.Stats.Dice (
   Probability,
+  Prob.fromFrequencies,
   roll,
   rollScaled,
   divRandRound,
+  xChanceInY,
   Dice,
   Normable,
   norm,
@@ -41,7 +43,7 @@ roll m | m <= 1 = return 0
        | otherwise = Prob.uniform [0..(m - 1)]
 
 rollScaled :: (Dice m) => Integer -> Integer -> m Integer
-rollScaled m s | m <= 0 = return 0
+rollScaled m s | m < s = return 0
                | otherwise = let
                  uniOptions = [0 .. (m `div` s) - 1]
                  uniFreqs = map (\a -> (a, 1 % 1)) uniOptions
@@ -51,6 +53,9 @@ rollScaled m s | m <= 0 = return 0
 divRandRound :: (Dice m) => Integer -> Integer -> m Integer
 divRandRound num den = Prob.fromFrequencies [(num `div` den, zeroProb), (num `div` den + 1, (1 % 1) - zeroProb)]
   where zeroProb = rem num den % den
+
+xChanceInY :: (Dice m) => Integer -> Integer -> m Bool
+xChanceInY x y = Prob.fromFrequencies [(True, x % y), (False, (y-x) % y)]
 
 space :: Boxes.Box
 space = Boxes.char ' '
