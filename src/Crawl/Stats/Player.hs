@@ -52,7 +52,7 @@ toHit player = norm $ do
   randbap <- divRandRound bap 20
   let fromWeapon = Weapon.hit $ weapon player
   let max = 15 +
-            calcStatToHitBase player +
+            (calcStatToHitBase player `div` 2) +
             fromFighting +
             fromWeaponSkill +
             fromWeapon -
