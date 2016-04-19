@@ -16,11 +16,13 @@ player cd = Player {
   str = 20,
   int = 1,
   dex = 9,
-  weapon = fromJust $ CrawlData.findWeapon "club" cd,
+  weapon = fromJust $ CrawlData.findWeapon "whip" cd,
   armour = fromJust $ CrawlData.findArmour "plate" cd,
+  shield = fromJust $ CrawlData.findShield "shield" cd,
   fighting = 3,
   macesSkill = 3,
-  armourSkill = 3
+  armourSkill = 3,
+  shieldSkill = 0
 }
 
 main :: IO ()

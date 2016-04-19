@@ -22,6 +22,7 @@ library
                      , Crawl.Stats.Monster
                      , Crawl.Stats.Named
                      , Crawl.Stats.Player
+                     , Crawl.Stats.Shield
                      , Crawl.Stats.Stats
                      , Crawl.Stats.Weapon
   build-depends:       base >= 4.7 && < 5

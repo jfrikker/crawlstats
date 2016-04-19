@@ -9,11 +9,13 @@ module Crawl.Stats.Player (
 ) where
 
 import Crawl.Stats.Dice
-import Crawl.Stats.Weapon (Weapon)
 import qualified Crawl.Stats.Stats as Stats
+import Crawl.Stats.Weapon (Weapon)
 import qualified Crawl.Stats.Weapon as Weapon
 import Crawl.Stats.Armour (Armour)
 import qualified Crawl.Stats.Armour as Armour
+import Crawl.Stats.Shield (Shield)
+import qualified Crawl.Stats.Shield as Shield
 import Control.Monad.State (evalStateT, get, put, StateT, lift)
 
 data Player = Player {
@@ -22,9 +24,11 @@ data Player = Player {
   dex :: Integer,
   weapon :: Weapon,
   armour :: Armour,
+  shield :: Shield,
   fighting :: Integer,
   macesSkill :: Integer,
-  armourSkill :: Integer
+  armourSkill :: Integer,
+  shieldSkill :: Integer
 }
 
 skill :: Stats.Skill -> Player -> Integer
@@ -35,8 +39,15 @@ adjustedBodyArmourPenalty scale player = 2 * encumbrance * encumbrance * (450 - 
                                           * scale `div` (5 * (str player + 3)) `div` 450
   where encumbrance = (Armour.encumbrance.armour) player
 
+adjustedShieldPenalty :: Integer -> Player -> Integer
+adjustedShieldPenalty scale player = max 0 $ (basePenalty * scale - shieldSkill player * scale `div` 5 * 10) `div` 10
+  where basePenalty = (Shield.evPenalty.shield) player
+
 armourToHitPenalty :: Dice m => Player -> m Integer
-armourToHitPenalty player = roll $ adjustedBodyArmourPenalty 20 player
+armourToHitPenalty player = rollScaled (adjustedBodyArmourPenalty 20 player) 20
+
+shieldToHitPenalty :: Dice m => Player -> m Integer
+shieldToHitPenalty player = rollScaled (adjustedShieldPenalty 20 player) 20
 
 calcStatToHitBase :: Player -> Integer
 calcStatToHitBase player = dex player + (str player - dex player) * (Weapon.strWeight.weapon) player `div` 20
@@ -49,14 +60,15 @@ toHit player = norm $ do
   fromFighting <- roll $ fighting player
   fromWeaponSkill <- roll $ weaponSkill player
   bap <- armourToHitPenalty player
-  randbap <- divRandRound bap 20
+  shieldPenalty <- shieldToHitPenalty player
   let fromWeapon = Weapon.hit $ weapon player
   let max = 15 +
             (calcStatToHitBase player `div` 2) +
             fromFighting +
             fromWeaponSkill +
             fromWeapon -
-            randbap
+            bap -
+            shieldPenalty
   roll max
 
 calcStatToDamBase :: Player -> Integer
