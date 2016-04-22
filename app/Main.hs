@@ -7,7 +7,7 @@ import Crawl.Stats.Data (CrawlData)
 import qualified Crawl.Stats.Data as CrawlData
 import qualified Crawl.Stats.Attack as Attack
 
-import Numeric.Probability.Distribution
+import Numeric.Probability.Distribution hiding (map)
 import qualified Text.PrettyPrint.Boxes as Boxes
 import Data.Maybe (fromJust)
 import Data.Ratio ((%))
@@ -25,6 +25,12 @@ player cd = Player {
   shieldSkill = 0
 }
 
+deadBeforeTable :: [T Dice.Probability Integer] -> Boxes.Box
+deadBeforeTable turnProbs = Dice.probTable show zipped
+  where zeroProb = map ((== 0) ??) turnProbs
+        topN = takeWhile (< (99%100)) zeroProb
+        zipped = zip [0..] topN
+
 main :: IO ()
 main = do
   cd <- CrawlData.loadData "data"
@@ -40,3 +46,6 @@ main = do
   let monster = fromJust $ CrawlData.findMonster "bat" cd
   let playerDamage = Attack.playerDamage monster p
   Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons playerDamage
+
+  let monsterHpAfter = Attack.hpAfter p monster
+  Boxes.printBox $ deadBeforeTable monsterHpAfter
