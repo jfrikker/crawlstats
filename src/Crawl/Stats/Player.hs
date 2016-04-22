@@ -5,7 +5,8 @@ module Crawl.Stats.Player (
   toHit,
   meleeDamage,
   adjustedBodyArmourPenalty,
-  weaponSpeed
+  weaponSpeed,
+  ev
 ) where
 
 import Crawl.Stats.Dice
@@ -122,3 +123,6 @@ weaponSpeed player = max minDelay $ baseSpeed - skillAdj
   where baseSpeed = Weapon.speed $ weapon player
         minDelay = min 7 $ baseSpeed `div` 2
         skillAdj = weaponSkill player `div` 2
+
+ev :: Player -> Integer
+ev player = 1

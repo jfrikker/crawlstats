@@ -16,7 +16,7 @@ player cd = Player {
   str = 20,
   int = 1,
   dex = 9,
-  weapon = fromJust $ CrawlData.findWeapon "whip" cd,
+  weapon = fromJust $ CrawlData.findWeapon "flail" cd,
   armour = fromJust $ CrawlData.findArmour "plate" cd,
   shield = fromJust $ CrawlData.findShield "shield" cd,
   fighting = 3,
@@ -39,13 +39,15 @@ main = do
   let toHitList = decons toHit
   Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt toHitList
   print $ Player.weaponSpeed p
+  print $ Player.ev p
 
   let damage = Player.meleeDamage p
   Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons damage
 
   let monster = fromJust $ CrawlData.findMonster "bat" cd
-  let playerDamage = Attack.playerDamage monster p
+  let attack = Attack.PM p monster
+  let playerDamage = Attack.damagePerAttack attack
   Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons playerDamage
 
-  let monsterHpAfter = Attack.hpAfter p monster
+  let monsterHpAfter = Attack.hpAfter attack
   Boxes.printBox $ deadBeforeTable monsterHpAfter

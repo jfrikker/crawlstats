@@ -1,7 +1,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module Crawl.Stats.Attack (
-  playerDamage,
+  Attack(..),
+  damagePerAttack,
   hpAfter
 ) where
 
@@ -30,23 +31,32 @@ applyAc monster player damage = do
   saved <- roll (1 + Monster.ac monster)
   return $ max (damage - saved) 0
 
-playerDamage :: (Dice m, Normable (m Integer)) => Monster -> Player -> m Integer
-playerDamage monster player = norm $ do
+data Attack = PM Player Monster | MP Monster Player
+
+damagePerAttack :: (Dice m, Normable (m Integer)) => Attack -> m Integer
+damagePerAttack (PM player monster) = norm $ do
   hit <- testHit monster player
   fullDam <- if hit
     then Player.meleeDamage player
     else return 0
   applyAc monster player fullDam
 
-hpAfter :: (Dice m, Normable (m Integer)) => Player -> Monster -> [m Integer]
-hpAfter player monster = List.scanl hpAtTurn (Monster.hp monster) [1..]
+weaponSpeed :: Attack -> Integer
+weaponSpeed (PM player _) = Player.weaponSpeed player
+
+defenderMaxHp :: (Dice m, Normable (m Integer)) => Attack -> m Integer
+defenderMaxHp (PM _ monster) = Monster.hp monster
+
+attack :: (Dice m, Normable (m Integer)) => Attack -> Integer -> m Integer
+attack _ 0 = return 0
+attack atk hp = do
+  d <- damagePerAttack atk
+  return $ max 0 $ hp - d
+
+hpAfter :: (Dice m, Normable (m Integer)) => Attack -> [m Integer]
+hpAfter atk = List.scanl hpAtTurn (defenderMaxHp atk) [1..]
   where hpAtTurn prev num = norm $ do
                               let numRolls = (10 * num `div` speed) - (10 * (num - 1) `div` speed)
                               p <- prev
-                              concatM (replicate (fromIntegral numRolls) doHit) p
-        damage = playerDamage monster player
-        speed = Player.weaponSpeed player
-        doHit 0 = return 0
-        doHit hp = do
-          d <- damage
-          return $ max 0 $ hp - d
+                              concatM (replicate (fromIntegral numRolls) (attack atk)) p
+        speed = weaponSpeed atk
