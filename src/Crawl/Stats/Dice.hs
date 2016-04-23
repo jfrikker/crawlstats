@@ -6,6 +6,7 @@ module Crawl.Stats.Dice (
   Prob.fromFrequencies,
   roll,
   rollScaled,
+  rollAveraged,
   divRandRound,
   xChanceInY,
   Dice,
@@ -13,7 +14,8 @@ module Crawl.Stats.Dice (
   norm,
   cdt,
   reverseCdt,
-  probTable
+  probTable,
+  formatPercent
 ) where
 
 import Data.Ratio (Rational, (%))
@@ -23,6 +25,7 @@ import Text.PrettyPrint.Boxes ((//))
 import qualified Text.PrettyPrint.Boxes as Boxes
 import Text.Printf (printf)
 import qualified Data.List as List
+import Control.Monad.Loops (concatM)
 
 type Probability = Rational
 
@@ -49,6 +52,14 @@ rollScaled m s | m < s = return 0
                  uniFreqs = map (\a -> (a, 1 % 1)) uniOptions
                  freqs = (m `div` s, m `mod` s % s) : uniFreqs
                  in Prob.fromFrequencies freqs
+
+rollAveraged :: (Dice m) => Integer -> Integer -> m Integer
+rollAveraged num max = do
+  tot <- concatM (replicate (fromIntegral num) doRoll) 0
+  return $ tot `div` num
+  where doRoll tot = do
+                       r <- roll max
+                       return $ r + tot
 
 divRandRound :: (Dice m) => Integer -> Integer -> m Integer
 divRandRound num den = Prob.fromFrequencies [(num `div` den, zeroProb), (num `div` den + 1, (1 % 1) - zeroProb)]

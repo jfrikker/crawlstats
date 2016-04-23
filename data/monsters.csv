@@ -1,4 +1,4 @@
-name,ev,ac,minHp,maxHp,hd
-bat,14,1,2,5,1
-goblin,12,0,2,6,1
-kobold,12,2,2,5,1
+name,ev,ac,minHp,maxHp,hd,attack
+bat,14,1,2,5,1,1
+goblin,12,0,2,6,1,4
+kobold,12,2,2,5,1,4

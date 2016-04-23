@@ -2,7 +2,13 @@
 
 module Crawl.Stats.Attack (
   Attack(..),
+  toHit,
+  damage,
   damagePerAttack,
+  weaponSpeed,
+  defenderMaxHp,
+  evasion,
+  testHit,
   hpAfter
 ) where
 
@@ -17,14 +23,15 @@ import Control.Monad.Loops (concatM)
 minHitMissPercentage :: Integer
 minHitMissPercentage = 5
 
-testHit :: (Dice m, Normable (m Integer)) => Monster -> Player -> m Bool
-testHit monster player = do
+testHit :: (Dice m, Normable (m Integer)) => Attack -> m Bool
+testHit atk = do
   automatic <- xChanceInY minHitMissPercentage 100
   if automatic
     then xChanceInY 1 2
     else do
-      tohit <- Player.toHit player
-      return $ tohit >= Monster.ev monster
+      tohit <- toHit atk
+      ev <- evasion atk
+      return $ tohit >= ev
 
 applyAc :: (Dice m) => Monster -> Player -> Integer -> m Integer
 applyAc monster player damage = do
@@ -33,19 +40,33 @@ applyAc monster player damage = do
 
 data Attack = PM Player Monster | MP Monster Player
 
+toHit :: (Dice m, Normable (m Integer)) => Attack -> m Integer
+toHit (PM player _) = Player.toHit player
+toHit (MP monster _) = return $ Monster.toHit monster
+
+damage :: (Dice m, Normable (m Integer)) => Attack -> m Integer
+damage (PM player _) = Player.meleeDamage player
+damage (MP monster _) = return $ Monster.attack monster
+
 damagePerAttack :: (Dice m, Normable (m Integer)) => Attack -> m Integer
-damagePerAttack (PM player monster) = norm $ do
-  hit <- testHit monster player
+damagePerAttack atk@(PM player monster) = norm $ do
+  hit <- testHit atk
   fullDam <- if hit
-    then Player.meleeDamage player
+    then damage atk
     else return 0
   applyAc monster player fullDam
 
 weaponSpeed :: Attack -> Integer
 weaponSpeed (PM player _) = Player.weaponSpeed player
+weaponSpeed (MP monster _) = 10
 
 defenderMaxHp :: (Dice m, Normable (m Integer)) => Attack -> m Integer
 defenderMaxHp (PM _ monster) = Monster.hp monster
+defenderMaxHp (MP _ player) = return $ Player.hp player
+
+evasion :: (Dice m, Normable (m Integer)) => Attack -> m Integer
+evasion (PM _ monster) = return $ Monster.ev monster
+evasion (MP _ player) = norm $ rollAveraged 2 $ 2 * Player.ev player
 
 attack :: (Dice m, Normable (m Integer)) => Attack -> Integer -> m Integer
 attack _ 0 = return 0

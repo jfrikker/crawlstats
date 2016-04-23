@@ -15,7 +15,8 @@ data Monster = Monster {
   ac :: Integer,
   minHp :: Integer,
   maxHp :: Integer,
-  hd :: Integer
+  hd :: Integer,
+  attack :: Integer
 } deriving Generic
 
 instance CSV.FromNamedRecord Monster
