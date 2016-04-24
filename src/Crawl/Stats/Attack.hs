@@ -8,6 +8,7 @@ module Crawl.Stats.Attack (
   weaponSpeed,
   defenderMaxHp,
   evasion,
+  ac,
   testHit,
   hpAfter
 ) where
@@ -18,7 +19,9 @@ import qualified Crawl.Stats.Player as Player
 import Crawl.Stats.Monster (Monster)
 import qualified Crawl.Stats.Monster as Monster
 import qualified Data.List as List
-import Control.Monad.Loops (concatM)
+import qualified Data.Array as Array
+import Data.Array ((!))
+import Debug.Trace
 
 minHitMissPercentage :: Integer
 minHitMissPercentage = 5
@@ -33,10 +36,20 @@ testHit atk = do
       ev <- evasion atk
       return $ tohit >= ev
 
-applyAc :: (Dice m) => Monster -> Player -> Integer -> m Integer
-applyAc monster player damage = do
-  saved <- roll (1 + Monster.ac monster)
-  return $ max (damage - saved) 0
+ac :: Attack -> Integer
+ac (PM _ monster) = Monster.ac monster
+ac (MP _ player) = Player.ac player
+
+gdr :: Attack -> Integer
+gdr (PM _ monster) = Monster.gdr monster
+gdr (MP _ player) = Player.gdr player
+
+applyAc :: (Dice m) => Attack -> Integer -> m Integer
+applyAc atk damage = do
+  fromAc <- roll (1 + ac atk)
+  let fromGdr = min (gdr atk * damage `div` 100) (ac atk `div` 2)
+  let saved = max fromAc fromGdr
+  return $ max 0 $ damage - saved
 
 data Attack = PM Player Monster | MP Monster Player
 
@@ -46,19 +59,21 @@ toHit (MP monster _) = return $ Monster.toHit monster
 
 damage :: (Dice m, Normable (m Integer)) => Attack -> m Integer
 damage (PM player _) = Player.meleeDamage player
-damage (MP monster _) = return $ Monster.attack monster
+damage (MP monster _) = do
+  r <- roll $ Monster.attack monster
+  return $ r + 1
 
 damagePerAttack :: (Dice m, Normable (m Integer)) => Attack -> m Integer
-damagePerAttack atk@(PM player monster) = norm $ do
+damagePerAttack atk = norm $ do
   hit <- testHit atk
   fullDam <- if hit
     then damage atk
     else return 0
-  applyAc monster player fullDam
+  applyAc atk fullDam
 
-weaponSpeed :: Attack -> Integer
+weaponSpeed :: (Dice m, Normable (m Integer)) => Attack -> m Integer
 weaponSpeed (PM player _) = Player.weaponSpeed player
-weaponSpeed (MP monster _) = 10
+weaponSpeed (MP monster _) = return 10
 
 defenderMaxHp :: (Dice m, Normable (m Integer)) => Attack -> m Integer
 defenderMaxHp (PM _ monster) = Monster.hp monster
@@ -75,9 +90,16 @@ attack atk hp = do
   return $ max 0 $ hp - d
 
 hpAfter :: (Dice m, Normable (m Integer)) => Attack -> [m Integer]
-hpAfter atk = List.scanl hpAtTurn (defenderMaxHp atk) [1..]
-  where hpAtTurn prev num = norm $ do
-                              let numRolls = (10 * num `div` speed) - (10 * (num - 1) `div` speed)
-                              p <- prev
-                              concatM (replicate (fromIntegral numRolls) (attack atk)) p
+hpAfter atk = Array.elems memo
+  where maxHp = defenderMaxHp atk
         speed = weaponSpeed atk
+        memo = Array.listArray (0, 500) $ map hpAtAut [0..500]
+        hpAtAut aut = norm $ do
+          delay <- speed
+          let last = aut - delay
+          if last < 0
+            then maxHp
+            else do
+              hp <- memo ! last
+              attack atk hp
+

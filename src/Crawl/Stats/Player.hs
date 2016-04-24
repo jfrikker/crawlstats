@@ -5,7 +5,9 @@ module Crawl.Stats.Player (
   toHit,
   meleeDamage,
   adjustedBodyArmourPenalty,
-  weaponSpeed
+  weaponSpeed,
+  ac,
+  gdr
 ) where
 
 import Crawl.Stats.Dice
@@ -119,8 +121,21 @@ meleeDamage player = norm $ evalStateT (do
   modifyM $ playerApplyFightingSkill player
   get) 0
 
-weaponSpeed :: Player -> Integer
-weaponSpeed player = max minDelay $ baseSpeed - skillAdj
-  where baseSpeed = Weapon.speed $ weapon player
-        minDelay = min 7 $ baseSpeed `div` 2
-        skillAdj = weaponSkill player `div` 2
+weaponSpeed :: (Dice m, Normable (m Integer)) => Player -> m Integer
+weaponSpeed player = norm $ do
+  let baseSpeed = Weapon.speed $ weapon player
+  let minDelay = min 7 $ baseSpeed `div` 2
+  let baseShieldPenalty = adjustedShieldPenalty 20 player
+  skillAdj <- divRandRound (weaponSkill player * 10) 20
+  shieldAdj <- if baseShieldPenalty == 0
+                 then return 0
+                 else do
+                   r <- minRoll 2 baseShieldPenalty
+                   divRandRound r 20
+  return $ max minDelay $ baseSpeed - skillAdj + shieldAdj
+
+ac :: Player -> Integer
+ac = Armour.baseAc . armour
+
+gdr :: Player -> Integer
+gdr = Armour.gdr . armour

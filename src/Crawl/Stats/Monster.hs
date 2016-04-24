@@ -26,8 +26,11 @@ instance Named.Named Monster where
 
 hp :: Dice m => Monster -> m Integer
 hp monster = do
-  r <- roll (maxHp monster - minHp monster)
+  r <- roll (maxHp monster - minHp monster + 1)
   return $ minHp monster + r
 
 toHit :: Monster -> Integer
 toHit monster = 18 + hd monster * 15 `div` 10
+
+gdr :: Monster -> Integer
+gdr _ = 0
