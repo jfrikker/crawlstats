@@ -9,7 +9,10 @@ import qualified Crawl.Stats.Named as Named
 
 data Shield = Shield {
   name :: String,
-  evPenalty :: Integer
+  block :: Integer,
+  evPenalty :: Integer,
+  dexContrib :: Integer,
+  strContrib :: Integer
 } deriving Generic
 
 instance CSV.FromNamedRecord Shield

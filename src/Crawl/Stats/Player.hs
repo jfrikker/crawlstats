@@ -7,7 +7,8 @@ module Crawl.Stats.Player (
   adjustedBodyArmourPenalty,
   weaponSpeed,
   ac,
-  gdr
+  gdr,
+  block
 ) where
 
 import Crawl.Stats.Dice
@@ -139,3 +140,15 @@ ac = Armour.baseAc . armour
 
 gdr :: Player -> Integer
 gdr = Armour.gdr . armour
+
+block :: Player -> Integer
+block player
+  | baseShield == 0 = 0
+  | otherwise = (50 + fromShield + extraFromSkill + fromSkill + fromStats) `div` 100
+  where baseShield = Shield.block (shield player) * 2
+        fromShield = baseShield * 50
+        extraFromSkill = baseShield * shieldSkill player * 5 `div` 2
+        fromSkill = shieldSkill player * 38 + min (3 * 38) (shieldSkill player * 38)
+        fromDex = Shield.dexContrib (shield player) * dex player
+        fromStr = Shield.strContrib (shield player) * str player
+        fromStats = (fromDex + fromStr) * (baseShield + 13) `div` 26

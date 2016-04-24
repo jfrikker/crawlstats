@@ -10,6 +10,7 @@ module Crawl.Stats.Attack (
   evasion,
   ac,
   testHit,
+  block,
   hpAfter
 ) where
 
@@ -63,13 +64,18 @@ damage (MP monster _) = do
   r <- roll $ Monster.attack monster
   return $ r + 1
 
-damagePerAttack :: (Dice m, Normable (m Integer)) => Attack -> m Integer
+damagePerAttack :: (Dice m, Normable (m Integer), Normable (m Bool)) => Attack -> m Integer
 damagePerAttack atk = norm $ do
   hit <- testHit atk
-  fullDam <- if hit
-    then damage atk
+  if hit
+    then do
+      b <- block atk
+      if b
+        then return 0
+        else do
+          fullDam <- damage atk
+          applyAc atk fullDam
     else return 0
-  applyAc atk fullDam
 
 weaponSpeed :: (Dice m, Normable (m Integer)) => Attack -> m Integer
 weaponSpeed (PM player _) = Player.weaponSpeed player
@@ -83,17 +89,26 @@ evasion :: (Dice m, Normable (m Integer)) => Attack -> m Integer
 evasion (PM _ monster) = return $ Monster.ev monster
 evasion (MP _ player) = norm $ rollAveraged 2 $ 2 * Player.ev player
 
-attack :: (Dice m, Normable (m Integer)) => Attack -> Integer -> m Integer
+block :: (Dice m, Normable (m Bool)) => Attack -> m Bool
+block (PM player monster) = return False
+block (MP monster player) = norm $ do
+  shield_bonus_roll <- rollAveraged 2 $ Player.block player * 2
+  let shield_bonus = shield_bonus_roll `div` 3 - 1
+  let shield_bypass_ability = 15 + Monster.hd monster * 2 `div` 3
+  con_block <- roll shield_bypass_ability
+  return $ shield_bonus >= con_block
+
+attack :: (Dice m, Normable (m Integer), Normable (m Bool)) => Attack -> Integer -> m Integer
 attack _ 0 = return 0
 attack atk hp = do
   d <- damagePerAttack atk
   return $ max 0 $ hp - d
 
-hpAfter :: (Dice m, Normable (m Integer)) => Attack -> [m Integer]
+hpAfter :: (Dice m, Normable (m Integer), Normable (m Bool)) => Attack -> [m Integer]
 hpAfter atk = Array.elems memo
   where maxHp = defenderMaxHp atk
         speed = weaponSpeed atk
-        memo = Array.listArray (0, 500) $ map hpAtAut [0..500]
+        memo = Array.listArray (0, 1000) $ map hpAtAut [0..1000]
         hpAtAut aut = norm $ do
           delay <- speed
           let last = aut - delay
