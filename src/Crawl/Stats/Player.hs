@@ -40,7 +40,7 @@ skill :: Stats.Skill -> Player -> Integer
 skill Stats.MACES_FLAILS = macesSkill
 
 adjustedBodyArmourPenalty :: Integer -> Player -> Integer
-adjustedBodyArmourPenalty scale player = 2 * encumbrance * encumbrance * (450 - armourSkill player)
+adjustedBodyArmourPenalty scale player = 2 * encumbrance * encumbrance * (450 - armourSkill player * 10)
                                           * scale `div` (5 * (str player + 3)) `div` 450
   where encumbrance = (Armour.encumbrance.armour) player
 
@@ -136,7 +136,9 @@ weaponSpeed player = norm $ do
   return $ max minDelay $ baseSpeed - skillAdj + shieldAdj
 
 ac :: Player -> Integer
-ac = Armour.baseAc . armour
+ac player = (base + fromSkill) `div` 100
+  where base = 100 * Armour.baseAc (armour player)
+        fromSkill = base * armourSkill player `div` 22
 
 gdr :: Player -> Integer
 gdr = Armour.gdr . armour
