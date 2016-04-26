@@ -50,17 +50,17 @@ loadData dir = do
   monsters <- loadDataFile dir "monsters.csv"
   return CrawlData { weapons = weapons, armour = armour, shields = shields, monsters = monsters }
 
-findWithName :: Named.Named a => String -> [a] -> Maybe a
-findWithName = Named.find . map toLower
+findWithName :: Named.Named a => String -> String -> [a] -> Either String a
+findWithName t name = maybe (Left $ "Unknown " ++ t ++ "\"" ++ name ++ "\"") Right . Named.find (map toLower name)
 
-findWeapon :: String -> CrawlData -> Maybe Weapon
-findWeapon name = findWithName name . weapons
+findWeapon :: String -> CrawlData -> Either String Weapon
+findWeapon name = findWithName "weapon" name . weapons
 
-findArmour :: String -> CrawlData -> Maybe Armour
-findArmour name = findWithName name . armour
+findArmour :: String -> CrawlData -> Either String Armour
+findArmour name = findWithName "armour" name . armour
 
-findShield :: String -> CrawlData -> Maybe Shield
-findShield name = findWithName name . shields
+findShield :: String -> CrawlData -> Either String Shield
+findShield name = findWithName "shield" name . shields
 
-findMonster :: String -> CrawlData -> Maybe Monster
-findMonster name = findWithName name . monsters
+findMonster :: String -> CrawlData -> Either String Monster
+findMonster name = findWithName "monster" name . monsters

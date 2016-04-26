@@ -30,7 +30,7 @@ data Player = Player {
   weapon :: Weapon,
   armour :: Armour,
   shield :: Shield,
-  fighting :: Integer,
+  fightingSkill :: Integer,
   macesSkill :: Integer,
   armourSkill :: Integer,
   shieldSkill :: Integer
@@ -62,7 +62,7 @@ weaponSkill player = skill (Weapon.skill $ weapon player) player
 
 toHit :: (Dice m, Normable (m Integer)) => Player -> m Integer
 toHit player = norm $ do
-  fromFighting <- roll $ fighting player
+  fromFighting <- roll $ fightingSkill player
   fromWeaponSkill <- roll $ weaponSkill player
   bap <- armourToHitPenalty player
   shieldPenalty <- shieldToHitPenalty player
@@ -92,7 +92,7 @@ playerStatModifyDamage player damage
 
 playerApplyFightingSkill :: Dice m => Player -> Integer -> m Integer
 playerApplyFightingSkill player damage = do
-  let num = (fighting player * 100) + 1
+  let num = (fightingSkill player * 100) + 1
   r <- rollScaled (num * damage) 4000
   return $ r + damage
 

@@ -14,20 +14,24 @@ import qualified Text.PrettyPrint.Boxes as Boxes
 import Data.Maybe (fromJust)
 import Text.Printf (printf)
 
-player cd = Player {
-  hp = 48,
-  ev = 6,
-  str = 20,
-  int = 1,
-  dex = 9,
-  weapon = fromJust $ CrawlData.findWeapon "mace" cd,
-  armour = fromJust $ CrawlData.findArmour "plate" cd,
-  shield = fromJust $ CrawlData.findShield "shield" cd,
-  fighting = 3,
-  macesSkill = 3,
-  armourSkill = 10,
-  shieldSkill = 0
-}
+import qualified PlayerSer
+
+data TempKV = TempKV
+
+instance PlayerSer.KVStore TempKV where
+ getString "hp" _ = Right "48"
+ getString "ev" _ = Right "6"
+ getString "str" _ = Right "20"
+ getString "int" _ = Right "1"
+ getString "dex" _ = Right "9"
+ getString "weapon" _ = Right "mace"
+ getString "armour" _ = Right "plate"
+ getString "shield" _ = Right "shield"
+ getString "fightingSkill" _ = Right "3"
+ getString "macesSkill" _ = Right "3"
+ getString "armourSkill" _ = Right "10"
+ getString "shieldSkill" _ = Right "0"
+ getString o _ = Left $ "Unknown key " ++ o
 
 deadBeforeTable :: [T Dice.Probability Integer] -> Boxes.Box
 deadBeforeTable autProbs = Dice.probTable (show . (`div` 10)) turnProbs
@@ -42,33 +46,33 @@ toAut = norm . fmap format
 
 printAttack :: Attack -> IO ()
 printAttack atk = do
-  -- putStrLn "HP:"
-  -- Boxes.printBox $ Dice.probTable show $ decons $ Attack.defenderMaxHp atk
-  -- putStrLn "Evasion:"
-  -- Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons $ Attack.evasion atk
-  -- putStrLn "To Hit:"
-  -- Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons $ Attack.toHit atk
-  -- putStrLn "Chance to hit:"
-  -- putStrLn $ Dice.formatPercent ((== True) ?? Attack.testHit atk)
-  -- putStrLn "Damage:"
-  -- Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons $ Attack.damage atk
-  -- putStrLn "AC:"
-  -- print $ Attack.ac atk
+  putStrLn "HP:"
+  Boxes.printBox $ Dice.probTable show $ decons $ Attack.defenderMaxHp atk
+  putStrLn "Evasion:"
+  Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons $ Attack.evasion atk
+  putStrLn "To Hit:"
+  Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons $ Attack.toHit atk
+  putStrLn "Chance to hit:"
+  putStrLn $ Dice.formatPercent ((== True) ?? Attack.testHit atk)
+  putStrLn "Damage:"
+  Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons $ Attack.damage atk
+  putStrLn "AC:"
+  print $ Attack.ac atk
   putStrLn "Block chance:"
   putStrLn $ Dice.formatPercent $ id ?? Attack.block atk
   putStrLn "Real damage / attack:"
   Boxes.printBox $ Dice.probTable show $ Dice.reverseCdt $ decons $ Attack.damagePerAttack atk
-  -- putStrLn "Weapon Speed:"
-  -- Boxes.printBox $ Dice.probTable id $ decons $ toAut $ Attack.weaponSpeed atk
+  putStrLn "Weapon Speed:"
+  Boxes.printBox $ Dice.probTable id $ decons $ toAut $ Attack.weaponSpeed atk
   putStrLn "Dead after:"
   Boxes.printBox $ deadBeforeTable $ Attack.hpAfter atk
 
 main :: IO ()
 main = do
   cd <- CrawlData.loadData "data"
-  let p = player cd
+  p <- either fail return $ PlayerSer.loadPlayer cd TempKV
 
-  let monster = fromJust $ CrawlData.findMonster "dire_elephant" cd
+  let Right monster = CrawlData.findMonster "bat" cd
   print $ Player.block p
 
   putStrLn ("Player -> " ++ name monster)
