@@ -109,12 +109,13 @@ hpAfter atk = Array.elems memo
   where maxHp = defenderMaxHp atk
         speed = weaponSpeed atk
         memo = Array.listArray (0, 1000) $ map hpAtAut [0..1000]
-        hpAtAut aut = norm $ do
+        startingHpAtAut aut = norm $ do
           delay <- speed
           let last = aut - delay
           if last < 0
             then maxHp
-            else do
-              hp <- memo ! last
-              attack atk hp
+            else memo ! last
+        hpAtAut aut = norm $ do
+          hp <- startingHpAtAut aut
+          attack atk hp
 
