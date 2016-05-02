@@ -50,7 +50,7 @@ loadData dir = do
   return CrawlData { weapons = weapons, armour = armour, shields = shields, monsters = monsters }
 
 findWithName :: Named.Named a => String -> String -> [a] -> Either String a
-findWithName t name = maybe (Left $ "Unknown " ++ t ++ "\"" ++ name ++ "\"") Right . Named.find (map toLower name)
+findWithName t name = maybe (Left $ "Unknown " ++ t ++ " \"" ++ name ++ "\"") Right . Named.find (map toLower name)
 
 findWeapon :: String -> CrawlData -> Either String Weapon
 findWeapon name = findWithName "weapon" name . weapons
