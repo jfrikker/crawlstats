@@ -20,8 +20,6 @@ import qualified Crawl.Stats.Player as Player
 import Crawl.Stats.Monster (Monster)
 import qualified Crawl.Stats.Monster as Monster
 import qualified Data.List as List
-import qualified Data.Array as Array
-import Data.Array ((!))
 import Debug.Trace
 
 minHitMissPercentage :: Integer
@@ -98,6 +96,11 @@ block (MP monster player) = norm $ do
   con_block <- roll shield_bypass_ability
   return $ shield_bonus >= con_block
 
+iterateWithLookback :: ((Int -> a) -> a) -> [a] -> [a]
+iterateWithLookback _  [] = []
+iterateWithLookback f back = b : iterateWithLookback f (b : back)
+  where b = f (back !!)
+
 attack :: (Dice m, Normable (m Integer), Normable (m Bool)) => Attack -> Integer -> m Integer
 attack _ 0 = return 0
 attack atk hp = do
@@ -105,17 +108,13 @@ attack atk hp = do
   return $ max 0 $ hp - d
 
 hpAfter :: (Dice m, Normable (m Integer), Normable (m Bool)) => Attack -> [m Integer]
-hpAfter atk = Array.elems memo
+hpAfter atk = iterateWithLookback hp $ repeat maxHp
   where maxHp = defenderMaxHp atk
         speed = weaponSpeed atk
-        memo = Array.listArray (0, 1000) $ map hpAtAut [0..1000]
-        startingHpAtAut aut = norm $ do
+        startingHp lookback = norm $ do
           delay <- speed
-          let last = aut - delay
-          if last < 0
-            then maxHp
-            else memo ! last
-        hpAtAut aut = norm $ do
-          hp <- startingHpAtAut aut
+          lookback $ fromIntegral delay
+        hp lookback = norm $ do
+          hp <- startingHp lookback
           attack atk hp
 

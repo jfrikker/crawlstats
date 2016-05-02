@@ -36,7 +36,6 @@ library
                      , monadplus
                      , bytestring
                      , monad-loops
-                     , array
   default-language:    Haskell2010
 
 executable crawlstats
