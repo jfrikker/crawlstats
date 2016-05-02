@@ -12,7 +12,7 @@ data Armour = Armour {
   baseAc :: Integer,
   encumbrance :: Integer,
   gdr :: Integer
-} deriving Generic
+} deriving (Generic, Eq)
 
 instance CSV.FromNamedRecord Armour
 

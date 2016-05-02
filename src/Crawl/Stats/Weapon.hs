@@ -15,7 +15,7 @@ data Weapon = Weapon {
   speed :: Integer,
   strWeight :: Integer,
   skill :: Skill
-} deriving Generic
+} deriving (Generic, Eq)
 
 instance CSV.FromNamedRecord Weapon
 

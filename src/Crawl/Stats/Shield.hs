@@ -13,7 +13,7 @@ data Shield = Shield {
   evPenalty :: Integer,
   dexContrib :: Integer,
   strContrib :: Integer
-} deriving Generic
+} deriving (Generic, Eq)
 
 instance CSV.FromNamedRecord Shield
 

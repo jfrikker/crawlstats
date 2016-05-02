@@ -1,5 +1,4 @@
 module Crawl.Stats.Data (
-  Weapon(..),
   CrawlData(..),
   loadData,
   findWeapon,
