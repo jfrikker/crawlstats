@@ -13,6 +13,7 @@ import qualified Data.ByteString.Lazy as ByteString
 import qualified Data.Vector as Vector
 import Data.List (find)
 import Data.Char (toLower)
+import Data.Default (def)
 
 import Crawl.Stats.Weapon (Weapon)
 import qualified Crawl.Stats.Weapon as Weapon
@@ -47,7 +48,10 @@ loadData dir = do
   armour <- loadDataFile dir "armour.csv"
   shields <- loadDataFile dir "shields.csv"
   monsters <- loadDataFile dir "monsters.csv"
-  return CrawlData { weapons = weapons, armour = armour, shields = shields, monsters = monsters }
+  return CrawlData { weapons = def : weapons, 
+                     armour = def : armour, 
+                     shields = def : shields, 
+                     monsters = monsters }
 
 findWithName :: Named.Named a => String -> String -> [a] -> Either String a
 findWithName t name = maybe (Left $ "Unknown " ++ t ++ " \"" ++ name ++ "\"") Right . Named.find (map toLower name)

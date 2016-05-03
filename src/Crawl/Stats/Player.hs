@@ -11,6 +11,9 @@ module Crawl.Stats.Player (
   block
 ) where
 
+import Control.Monad.State (evalStateT, get, put, StateT, lift)
+import Data.Default (Default, def)
+
 import Crawl.Stats.Dice
 import qualified Crawl.Stats.Stats as Stats
 import Crawl.Stats.Weapon (Weapon)
@@ -19,7 +22,6 @@ import Crawl.Stats.Armour (Armour)
 import qualified Crawl.Stats.Armour as Armour
 import Crawl.Stats.Shield (Shield)
 import qualified Crawl.Stats.Shield as Shield
-import Control.Monad.State (evalStateT, get, put, StateT, lift)
 
 data Player = Player {
   hp :: Integer,
@@ -35,6 +37,9 @@ data Player = Player {
   armourSkill :: Integer,
   shieldSkill :: Integer
 }
+
+instance Default Player where
+  def = Player 1 1 1 1 1 def def def 0 0 0 0
 
 skill :: Stats.Skill -> Player -> Integer
 skill Stats.MACES_FLAILS = macesSkill

@@ -4,6 +4,7 @@ module Crawl.Stats.Shield where
 
 import qualified Data.Csv as CSV
 import GHC.Generics (Generic)
+import qualified Data.Default as Default
 
 import qualified Crawl.Stats.Named as Named
 
@@ -19,3 +20,6 @@ instance CSV.FromNamedRecord Shield
 
 instance Named.Named Shield where
   name = name
+
+instance Default.Default Shield where
+  def = Shield "none" 0 0 0 0
