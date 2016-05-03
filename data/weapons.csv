@@ -1,14 +1,14 @@
 name,dam,hit,speed,strWeight,skill
-whip,6,2,11,2,MACES_FLAILS
 club,5,3,13,7,MACES_FLAILS
-rod,5,3,13,7,MACES_FLAILS
-mace,8,3,14,8,MACES_FLAILS
-flail,10,0,14,8,MACES_FLAILS
-morningstar,13,-2,15,8,MACES_FLAILS
-demon_whip,11,1,11,2,MACES_FLAILS
-sacred_scourge,12,0,11,2,MACES_FLAILS
-dire_flail,13,-3,13,9,MACES_FLAILS
+demon whip,11,1,11,2,MACES_FLAILS
+dire flail,13,-3,13,9,MACES_FLAILS
 eveningstar,15,-1,15,8,MACES_FLAILS
-great_mace,17,-4,17,9,MACES_FLAILS
-giant_club,20,-6,16,10,MACES_FLAILS
-giant_spiked_club,22,-7,19,10,MACES_FLAILS
+flail,10,0,14,8,MACES_FLAILS
+great mace,17,-4,17,9,MACES_FLAILS
+giant club,20,-6,16,10,MACES_FLAILS
+giant spiked club,22,-7,19,10,MACES_FLAILS
+mace,8,3,14,8,MACES_FLAILS
+morningstar,13,-2,15,8,MACES_FLAILS
+rod,5,3,13,7,MACES_FLAILS
+sacred scourge,12,0,11,2,MACES_FLAILS
+whip,6,2,11,2,MACES_FLAILS
