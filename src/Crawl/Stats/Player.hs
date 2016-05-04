@@ -11,8 +11,9 @@ module Crawl.Stats.Player (
   block
 ) where
 
-import Control.Monad.State (evalStateT, get, put, StateT, lift)
 import Data.Default (Default, def)
+import Control.Monad ((>=>))
+import Data.Function((&))
 
 import Crawl.Stats.Dice
 import qualified Crawl.Stats.Stats as Stats
@@ -107,25 +108,12 @@ playerApplyWeaponSkill player damage = do
   r <- rollScaled (num * damage) 2500
   return $ r + damage
 
-modifyM :: Monad m => (s -> m s) -> StateT s m ()
-modifyM m = do
-  current <- get
-  temp <- lift $ m current
-  put temp
-
-getsM :: Monad m => (s -> m a) -> StateT s m a
-getsM f = do
-  s <- get
-  lift $ f s
-
 meleeDamage :: (Dice m, Normable (m Integer)) => Player -> m Integer
-meleeDamage player = norm $ evalStateT (do
-  put $ (Weapon.dam.weapon) player
-  modifyM $ playerStatModifyDamage player
-  modifyM $ roll . (+ 1)
-  modifyM $ playerApplyWeaponSkill player
-  modifyM $ playerApplyFightingSkill player
-  get) 0
+meleeDamage player = norm $ (Weapon.dam.weapon) player & (
+  playerStatModifyDamage player
+  >=> roll . (+ 1)
+  >=> playerApplyWeaponSkill player
+  >=> playerApplyFightingSkill player)
 
 weaponSpeed :: (Dice m, Normable (m Integer)) => Player -> m Integer
 weaponSpeed player = norm $ do

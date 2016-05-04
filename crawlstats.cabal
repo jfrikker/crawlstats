@@ -32,7 +32,6 @@ library
                      , cassava
                      , bytestring
                      , vector
-                     , mtl
                      , monadplus
                      , bytestring
                      , monad-loops
