@@ -72,7 +72,7 @@ main = do
   cd <- CrawlData.loadData "data"
   p <- either fail return $ PlayerSer.loadPlayer cd TempKV
 
-  let Right monster = CrawlData.findMonster "bat" cd
+  let Right monster = CrawlData.find "bat" cd
   print $ Player.block p
 
   putStrLn ("Player -> " ++ name monster)

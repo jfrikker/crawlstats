@@ -1,10 +1,7 @@
 module Crawl.Stats.Data (
-  CrawlData(..),
+  CrawlData,
   loadData,
-  findWeapon,
-  findArmour,
-  findShield,
-  findMonster
+  Loaded(..),
 ) where
 
 import qualified Data.Csv as CSV
@@ -56,14 +53,26 @@ loadData dir = do
 findWithName :: Named.Named a => String -> String -> [a] -> Either String a
 findWithName t name = maybe (Left $ "Unknown " ++ t ++ " \"" ++ name ++ "\"") Right . Named.find (map toLower name)
 
-findWeapon :: String -> CrawlData -> Either String Weapon
-findWeapon name = findWithName "weapon" name . weapons
+class Named l => Loaded l where
+  list :: CrawlData -> [l]
+  find :: String -> CrawlData -> Either String l
 
-findArmour :: String -> CrawlData -> Either String Armour
-findArmour name = findWithName "armour" name . armour
+instance Loaded Weapon where
+  list = weapons
 
-findShield :: String -> CrawlData -> Either String Shield
-findShield name = findWithName "shield" name . shields
+  find name = findWithName "weapon" name . list
 
-findMonster :: String -> CrawlData -> Either String Monster
-findMonster name = findWithName "monster" name . monsters
+instance Loaded Armour where
+  list = armour
+
+  find name = findWithName "armour" name . list
+
+instance Loaded Shield where
+  list = shields
+
+  find name = findWithName "shield" name . list
+
+instance Loaded Monster where
+  list = monsters
+
+  find name = findWithName "monster" name . list

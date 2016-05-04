@@ -20,11 +20,11 @@ loadPlayer cd kv = do
   int <- getValue "int" kv
   dex <- getValue "dex" kv
   weaponName <- getString "weapon" kv
-  weapon <- CrawlData.findWeapon weaponName cd
+  weapon <- CrawlData.find weaponName cd
   armourName <- getString "armour" kv
-  armour <- CrawlData.findArmour armourName cd
+  armour <- CrawlData.find armourName cd
   shieldName <- getString "shield" kv
-  shield <- CrawlData.findShield shieldName cd
+  shield <- CrawlData.find shieldName cd
   fightingSkill <- getValue "fightingSkill" kv
   macesSkill <- getValue "macesSkill" kv
   armourSkill <- getValue "armourSkill" kv
