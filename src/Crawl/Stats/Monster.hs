@@ -17,7 +17,7 @@ data Monster = Monster {
   maxHp :: Integer,
   hd :: Integer,
   attack :: Integer
-} deriving Generic
+} deriving (Generic, Eq)
 
 instance CSV.FromNamedRecord Monster
 
