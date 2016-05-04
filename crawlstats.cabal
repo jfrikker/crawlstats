@@ -19,6 +19,7 @@ library
                      , Crawl.Stats.Attack
                      , Crawl.Stats.Data
                      , Crawl.Stats.Dice
+                     , Crawl.Stats.Lens.Player
                      , Crawl.Stats.Monster
                      , Crawl.Stats.Named
                      , Crawl.Stats.Player
@@ -36,6 +37,7 @@ library
                      , bytestring
                      , monad-loops
                      , data-default
+                     , lens
   default-language:    Haskell2010
 
 executable crawlstats
