@@ -3,7 +3,10 @@
 
 module Crawl.Stats.Dice (
   Probability,
-  Prob.fromFrequencies,
+  Dist,
+  RandomVar,
+  (Prob.??),
+  toRandomVar,
   roll,
   rollScaled,
   rollAveraged,
@@ -15,8 +18,11 @@ module Crawl.Stats.Dice (
   norm,
   cdt,
   reverseCdt,
+  confidenceInterval,
+  range,
   probTable,
-  formatPercent
+  formatPercent,
+  formatInterval
 ) where
 
 import qualified Numeric.Probability.Distribution as Prob hiding (uniform)
@@ -26,10 +32,13 @@ import qualified Text.PrettyPrint.Boxes as Boxes
 import Text.Printf (printf)
 import qualified Data.List as List
 import Control.Monad.Loops (concatM)
+import Debug.Trace
 
 type Probability = Double
 
 type Dist a = Prob.T Probability a
+
+type RandomVar a = [(a, Probability)]
 
 class Normable n where
   norm :: n -> n
@@ -38,8 +47,11 @@ class (Monad d, Prob.C Probability d) => Dice d
 
 instance Dice (Prob.T Probability)
 
-instance Ord a => Normable (Prob.T Probability a) where
+instance Ord a => Normable (Dist a) where
   norm = Prob.norm
+
+toRandomVar :: Ord a => Dist a -> RandomVar a
+toRandomVar = Prob.decons . norm
 
 roll :: (Dice m) => Integer -> m Integer
 roll m | m <= 1 = return 0
@@ -92,3 +104,18 @@ cdt = snd . List.mapAccumL inc 0
 
 reverseCdt :: [(a, Probability)] -> [(a, Probability)]
 reverseCdt = reverse . cdt . reverse
+
+confidenceInterval :: Probability -> [(a, Probability)] -> Maybe (a, a)
+confidenceInterval confidence dist = range inRange
+  where rangeMin = (1 - confidence) / 2
+        rangeMax = 1 - rangeMin
+        inRange = dropWhile ((< rangeMin) . snd) $ takeWhile ((< rangeMax) . snd) dist
+
+range :: [(a, Probability)] -> Maybe (a, a)
+range [] = Nothing
+range l = Just (fst $ head l, fst $ last l)
+
+formatInterval :: (Show a, Eq a) => Maybe (a, a) -> String
+formatInterval Nothing = "-"
+formatInterval (Just (hi, low)) | hi == low = show hi
+                                | otherwise = show hi ++ " - " ++ show low

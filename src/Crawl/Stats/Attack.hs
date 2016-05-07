@@ -11,7 +11,8 @@ module Crawl.Stats.Attack (
   ac,
   testHit,
   block,
-  hpAfter
+  hpAfter,
+  deadAfter
 ) where
 
 import Crawl.Stats.Dice
@@ -108,7 +109,7 @@ attack atk hp = do
   return $ max 0 $ hp - d
 
 hpAfter :: (Dice m, Normable (m Integer), Normable (m Bool)) => Attack -> [m Integer]
-hpAfter atk = iterateWithLookback hp $ repeat maxHp
+hpAfter atk = maxHp : iterateWithLookback hp (repeat maxHp)
   where maxHp = defenderMaxHp atk
         speed = weaponSpeed atk
         startingHp lookback = norm $ do
@@ -118,3 +119,6 @@ hpAfter atk = iterateWithLookback hp $ repeat maxHp
           hp <- startingHp lookback
           attack atk hp
 
+deadAfter :: Attack -> [Probability]
+deadAfter attack = (id ??) <$> atZero
+  where atZero = fmap (== 0) <$> hpAfter attack
